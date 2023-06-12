@@ -1,4 +1,1 @@
-cleantxt
 requests
-xmltodict
-dicttoxml

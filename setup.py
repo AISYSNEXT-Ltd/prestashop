@@ -26,5 +26,5 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.8",
     ],
-    keywords=['prestashop','e-com','e-commerce','prestashop api','api']
+    keywords=['prestashop','e-com','e-commerce','prestashop api','api','webservice']
 )

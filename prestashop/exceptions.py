@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-"""
-"""
-
 class PrestaShopError(Exception):
     """Generic PrestaShop WebServices error class.
     """
@@ -21,5 +17,9 @@ class PrestaShopError(Exception):
         return repr(self.ps_error_msg or self.msg)
 
 
-class PrestaShopAuthenticationError(PrestaShopError): 
-    pass 
+class PrestaShopAuthenticationError(PrestaShopError):
+    """Authentication Exception
+
+    Args:
+        PrestaShopError (Unauthorized)
+    """
