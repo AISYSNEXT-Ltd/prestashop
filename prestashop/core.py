@@ -7,6 +7,7 @@ Prestashop is a Python library to interact with PrestaShop's Web Service API.
 :copyright: (c) 2023 AISYSNEXT
 :license: GPLv3, see LICENSE for more details
 """
+import os
 from enum import Enum
 import mimetypes
 
@@ -95,8 +96,6 @@ class Prestashop():
 
     for rec in recs:
         pprint(rec)
-
-
     """
     api_key = ''
     url = ''
@@ -312,41 +311,6 @@ class Prestashop():
 
         return parsed_content
     
-    def _get_content_type(self, filename):
-        """Retrieve filename mimetype.
-
-        :param filename: file name.
-        :return: mimetype.
-        """
-        return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
-    
-    def _encode_multipart_formdata(self, files):
-        """Encode files to an http multipart/form-data.
-
-        :param files: a sequence of (type, filename, value)
-            elements for data to be uploaded as files.
-        :return: headers and body.
-        """
-        BOUNDARY = '----------ThIs_Is_tHe_bouNdaRY_$'
-        CRLF = b'\r\n'
-        L = []
-        for (key, filename, value) in files:
-            L.append('--' + BOUNDARY)
-            L.append(
-                'Content-Disposition: form-data; \
-                    name="%s"; filename="%s"' % (key, filename))
-            L.append('Content-Type: %s' % self._get_content_type(filename))
-            L.append('')
-            L.append(value)
-        L.append('--' + BOUNDARY + '--')
-        L.append('')
-        L = map(lambda l: l if isinstance(l, bytes) else l.encode('utf-8'), L)
-        body = CRLF.join(L)
-        headers = {
-            'Content-Type': 'multipart/form-data; boundary=%s' % BOUNDARY
-        }
-        return headers, body
-    
     def search(self,resource,display='full',_filter=None,sort=None,limit=None):
         """search from prestashop with options, for more details check the official doc \n
         https://devdocs.prestashop-project.org/1.7/webservice/tutorials/advanced-use/additional-list-parameters/
@@ -363,8 +327,8 @@ class Prestashop():
         """
         return self._exec(resource=resource,method='GET',display=display,_filter=_filter,sort=sort,limit=limit)
 
-    def read(self,resource:str,_id:str=None,display:str='full',sort:str=None,limit:str=None) -> dict:
-        """get one or more result from prestashop with options .
+    def read(self,resource:str,_id:str,display:str='full') -> dict:
+        """get one result from prestashop with options .
         for more details check the official doc \n
         https://devdocs.prestashop-project.org/1.7/webservice/tutorials/advanced-use/additional-list-parameters/
 
@@ -372,13 +336,10 @@ class Prestashop():
             resource (str): resource to search ( taxes,customers,products ...)
             _id (str, optional): the id if you wan one record. Defaults to None.
             display (str, optional): display parameter (full | [field1,field2]). Defaults to 'full'.
-            sort (str, optional): sort parameter ([{fieldname}_{ASC|DESC}] ,[lastname_ASC,id_DESC] ). Defaults to None.
-            limit (str, optional): limit parameter ('offset,limit' , '9,2' , '5'). Defaults to None.
-
         Returns:
             dict : result of get request
         """
-        return self._exec(resource,_id,'GET',display=display,sort=sort,limit=limit)
+        return self._exec(resource,_id,'GET',display=display)
 
     def write(self,resource:str,data:dict):
         """update record from prestashop
@@ -426,13 +387,12 @@ class Prestashop():
         else:
             return self._exec(resource=resource ,ids=ids, method='DELETE' , display=None)
     
-    def create(self,resource:str,data:dict=None,files=None):
+    def create(self,resource:str,data:dict):
         """create record 
 
         Args:
             resource (str): resource to search ( taxes,customers,products ...).
-            files (list[tuple], optional):  a sequence of (type, filename, value). Defaults to None.
-            data (dict, optional): data (dict): data in dict format (
+            data (dict): data in dict format (
                     data = {
                         'tax':{
                             'rate' : 3.000,
@@ -445,24 +405,52 @@ class Prestashop():
                             }
                         }
                     }
-        ). Defaults to None.
-
-            
-
-        Raises:
-            PrestaShopError: raise when data and files is None.
+        )
 
         Returns:
             dict: record added.
         """
 
-        if files is not None:
-            headers , data = self._encode_multipart_formdata(files)
-            return self._exec(resource=resource, method='POST' , data=data,_headers=headers,display=None)
-        elif data is None:
-            raise PrestaShopError('Undefined data.',404)
+
         data  = {'prestashop' : data}
         _data = dict2xml(data)
         return self._exec(resource=resource,data=_data,method='POST',display=None)
 
+    def create_binary(self,resource:str, file:str,_type:str = 'image'):
+        """create binary record
+
+        Args:
+            resource (str): resource to search ( 'images/products/22' ...).
+            files (str):  a path of file ('image.png', 'image.jpg').
+            _type (str): a type of file (image,pdf ...)
+        """
+
+        params = {}
+
+        if self.lang:
+            params.update({'language' : self.lang})
+        
+        if self.data_format == Format.JSON:
+            params.update({'io_format' : 'JSON' , 'output_format' : 'JSON'})
+    
+
+        _url = '{}{}'.format(self.url,resource)
+        url = self._prepare(_url,params)
+
+
+        if os.path.exists(file):
+
+            _file = {_type : open(file,'rb')}
+        else:
+            raise PrestaShopError('File not found',404)
+
+
+        response = self.client.post(
+            url=url,
+            files=_file
+        )
+
+        if response.status_code == 200:
+            return True
+        return False
 
