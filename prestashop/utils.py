@@ -1,6 +1,10 @@
 from xml.dom.minidom import getDOMImplementation
 from builtins import str
 from past.types import basestring
+import base64
+import tempfile
+import mimetypes
+import os
 
 
 def _process(doc, tag, tag_value):
@@ -111,3 +115,14 @@ def dict2xml(data, encoding='UTF-8'):
     root, _ = _process_complex(doc, list(data.items()))
     doc.appendChild(root[0])
     return doc.toxml(encoding)
+
+def base64_to_tmpfile(content,file_name):
+    _,ext = os.path.splitext(file_name)
+    path = ''
+    with  tempfile.NamedTemporaryFile(delete=False,suffix=ext) as tmp:
+        tmp.write(base64.b64decode(content))
+        path = tmp.name
+
+    return path
+
+

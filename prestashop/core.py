@@ -9,7 +9,7 @@ Prestashop is a Python library to interact with PrestaShop's Web Service API.
 """
 import os
 from enum import Enum
-import mimetypes
+
 
 from http.client import HTTPConnection
 from xml.etree import ElementTree
@@ -20,6 +20,8 @@ from requests.models import PreparedRequest
 
 from .exceptions import PrestaShopError,PrestaShopAuthenticationError
 from .utils import dict2xml
+from .utils import base64_to_tmpfile
+
 
 class Format(Enum):
     """Data types return (JSON,XML)
@@ -96,6 +98,12 @@ class Prestashop():
 
     for rec in recs:
         pprint(rec)
+
+    # create binary (product image)
+
+    api.create_binary('images/products/22','img.jpeg','image')
+    # or
+    api.create_binary('images/products/22','img.jpeg','image')
     """
     api_key = ''
     url = ''
@@ -416,13 +424,14 @@ class Prestashop():
         _data = dict2xml(data)
         return self._exec(resource=resource,data=_data,method='POST',display=None)
 
-    def create_binary(self,resource:str, file:str,_type:str = 'image'):
+    def create_binary(self,resource:str, file:str,_type:str = 'image',file_name=None):
         """create binary record
 
         Args:
-            resource (str): resource to search ( 'images/products/22' ...).
-            files (str):  a path of file ('image.png', 'image.jpg').
-            _type (str): a type of file (image,pdf ...)
+            resource (str): resource to add file ( 'images/products/22' ...).
+            files (str):  a path of file ('image.png', 'image.jpg') or binary.
+            _type (str, optional): a type of file (image,pdf ...) Default to 'image'
+            file_name (str, optinal): name of file in case of base64. Default to None
         """
 
         params = {}
@@ -441,6 +450,9 @@ class Prestashop():
         if os.path.exists(file):
 
             _file = {_type : open(file,'rb')}
+
+        elif isinstance(file ,str):
+            _file = {_type : open(base64_to_tmpfile(file,file_name),'rb') }
         else:
             raise PrestaShopError('File not found',404)
 
