@@ -466,3 +466,39 @@ class Prestashop():
             return True
         return False
 
+
+    def get_image_product(self,product_id:int,image_id:int):
+        """ get product image from prestashop
+
+        Args:
+            product_id (int): the id of product
+            image_id (int): the id of image
+        
+        Returns:
+            binary: image of product
+        
+        Raise:
+            PrestaShopError: 'This image id does not exist'
+        """
+        params = {}
+
+        if self.lang:
+            params.update({'language' : self.lang})
+
+        if self.data_format == Format.JSON:
+            params.update({'io_format' : 'JSON' , 'output_format' : 'JSON'})
+
+        _url = f'{self.url}images/products/{product_id}/{image_id}'
+        _url = self._prepare(_url,params)
+        
+        response = self.client.request(
+            method='GET',
+            url = _url,
+            headers={'Content-Type': 'application/json'}
+        )
+
+        if response.status_code == 200:
+            return response.content
+        
+        self._error(response.status_code,response.json())
+        return response.json()
