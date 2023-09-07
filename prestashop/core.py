@@ -377,7 +377,7 @@ class Prestashop():
         _data = dict2xml(data)
         return self._exec(resource=resource,method='PUT',data=_data,display=None)
 
-    def unlink(self,resource:str,ids:list[int]):
+    def unlink(self,resource:str,ids:list):
         """remove one or multiple records
 
         Args:
