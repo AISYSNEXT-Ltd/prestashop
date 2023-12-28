@@ -18,6 +18,8 @@ from xml.parsers.expat import ExpatError
 from requests import Session
 from requests.models import PreparedRequest
 
+from packaging import version
+
 from .exceptions import PrestaShopError,PrestaShopAuthenticationError
 from .utils import dict2xml
 from .utils import base64_to_tmpfile
@@ -347,9 +349,9 @@ class Prestashop():
         Returns:
             dict : result of get request
         """
-        if self._get_version() == '1.7.2.4':
+        if version.parse(self._get_version())  <= version.parse('1.7.2.4') :
             display = None
-            
+
         return self._exec(resource,_id,'GET',display=display)
 
     def write(self,resource:str,data:dict):
