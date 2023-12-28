@@ -229,7 +229,7 @@ class Prestashop():
         req.prepare_url(url , params)
         return req.url
 
-    def _exec(self,resource,_id=None,ids=None, method='GET',data=None,_headers=None,display='full',_filter=None,sort=None,limit=None):
+    def _exec(self,resource,_id=None,ids=None, method='GET',data=None,_headers=None,display=None,_filter=None,sort=None,limit=None):
         params = {}
 
         if self.lang:
@@ -347,6 +347,9 @@ class Prestashop():
         Returns:
             dict : result of get request
         """
+        if self._get_version() == '1.7.2.4':
+            display = None
+            
         return self._exec(resource,_id,'GET',display=display)
 
     def write(self,resource:str,data:dict):
@@ -502,3 +505,7 @@ class Prestashop():
         
         self._error(response.status_code,response.json())
         return response.json()
+    
+    def _get_version(self):
+        re = self.search('configurations','full','[name]=[PS_INSTALL_VERSION]')
+        return re['configurations'][0]['value']
