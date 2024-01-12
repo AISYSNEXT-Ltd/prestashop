@@ -113,6 +113,7 @@ class Prestashop():
     debug = False
     lang = None
     data_format = Format.JSON
+    ps_version = ''
 
     def __init__(self,url:str, api_key:str,data_format=Format.JSON,default_lang:str=None,session:Session=None,debug:bool=False) -> None:
         """ Prestashop class
@@ -148,6 +149,14 @@ class Prestashop():
 
         if not self.client.auth:
             self.client.auth = (self.api_key , '')
+        
+        
+        response = self.client.request(
+            method='HEAD',
+            url=self.url
+        )
+
+        self.ps_version = response.headers.get('psws-version')
 
     def ping(self):
         """ Test if webservice work perfectly else raise error
@@ -335,6 +344,7 @@ class Prestashop():
         Returns:
             dict : result of search
         """
+
         return self._exec(resource=resource,method='GET',display=display,_filter=_filter,sort=sort,limit=limit)
 
     def read(self,resource:str,_id:str,display:str='full') -> dict:
@@ -349,8 +359,11 @@ class Prestashop():
         Returns:
             dict : result of get request
         """
-        if version.parse(self._get_version())  <= version.parse('1.7.2.4') :
+
+
+        if version.parse(self.ps_version)  <= version.parse('1.7.6.8') :
             display = None
+
 
         return self._exec(resource,_id,'GET',display=display)
 
@@ -471,7 +484,6 @@ class Prestashop():
             return True
         return False
 
-
     def get_image_product(self,product_id:int,image_id:int):
         """ get product image from prestashop
 
@@ -507,7 +519,3 @@ class Prestashop():
         
         self._error(response.status_code,response.json())
         return response.json()
-    
-    def _get_version(self):
-        re = self.search('configurations','full','[name]=[PS_INSTALL_VERSION]')
-        return re['configurations'][0]['value']
