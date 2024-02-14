@@ -156,7 +156,8 @@ class Prestashop():
             url=self.url
         )
 
-        self.ps_version = response.headers.get('psws-version')
+
+        self.ps_version = response.headers.get('psws-version','1.7.2')
 
     def ping(self):
         """ Test if webservice work perfectly else raise error
