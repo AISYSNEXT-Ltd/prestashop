@@ -28,7 +28,7 @@ def get_author(rel_path):
             delim = '"' if '"' in line else "'"
             return line.split(delim)[1]
     else:
-        raise RuntimeError("Unable to find version string.")
+        raise RuntimeError("Unable to find autor string.")
 
 
 setup(
@@ -38,7 +38,7 @@ setup(
     license="GNU GPL-3",
     author=get_author('prestashop/version.py'),
     author_email="jemiaymen@gmail.com",
-    url="https://github.com/AiSyS-Next/prestashop",
+    url="https://github.com/AISYSNEXT-Ltd/prestashop",
     packages=find_packages(),
     install_requires=required,
     long_description=long_description,

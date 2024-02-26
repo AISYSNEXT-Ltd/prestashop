@@ -114,6 +114,9 @@ class Prestashop():
     lang = None
     data_format = Format.JSON
     ps_version = ''
+    proxies = None
+
+
 
     def __init__(self,url:str, api_key:str,data_format=Format.JSON,default_lang:str=None,session:Session=None,debug:bool=False) -> None:
         """ Prestashop class
@@ -157,7 +160,7 @@ class Prestashop():
         )
 
 
-        self.ps_version = response.headers.get('psws-version','1.7.2')
+        self.ps_version = response.headers.get('psws-version','1.0.1')
 
     def ping(self):
         """ Test if webservice work perfectly else raise error

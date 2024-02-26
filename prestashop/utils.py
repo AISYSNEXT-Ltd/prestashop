@@ -3,7 +3,6 @@ from builtins import str
 from past.types import basestring
 import base64
 import tempfile
-import mimetypes
 import os
 
 
